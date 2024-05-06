@@ -594,11 +594,13 @@ export class PluginManager {
 			}
 			await fs.ensureDir(pathToCreate);
 		}
-		try {
+		const moduleExists = await fs.pathExists(modulePath);
+		if (moduleExists) {
 			// remove link if it exists
+			if (debug.enabled) {
+				debug(`Removing existing link ${modulePath}`);
+			}
 			await fs.remove(modulePath);
-		} catch (e) {
-			// ignore
 		}
 		await fs.symlink(versionPath, modulePath);
 	}
@@ -753,7 +755,7 @@ export class PluginManager {
 		await this.installDependencies(plugin);
 
 		const oldPluginIndex = this.installedPlugins.findIndex(p => p.name === plugin.name);
-		if (oldPluginIndex != -1) {
+		if (oldPluginIndex !== -1) {
 			const oldPlugins = this.installedPlugins.splice(oldPluginIndex, 1);
 			await this.unlinkModule(oldPlugins[0]);
 		}

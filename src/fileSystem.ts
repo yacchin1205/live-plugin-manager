@@ -73,6 +73,10 @@ export interface CopyOptions {
 	exclude: string[];
 }
 
+export function pathExists(fsPath: string): Promise<boolean> {
+	return fs.pathExists(fsPath);
+}
+
 export function access(fsPath: string, mode?: number): Promise<void> {
 	return fs.access(fsPath, mode);
 }

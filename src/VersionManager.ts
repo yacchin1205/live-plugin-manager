@@ -145,7 +145,7 @@ export class VersionManager {
 	 *
 	 * @param name A package name
 	 * @param version A package version
-	 * @param withDependencies A flag to load dependent packages
+	 * @param withDependencies A flag to load dependency packages
 	 * @returns A plugin information for the specified version
 	 */
 	public async createVersionInfo(name: string, version: string, withDependencies: boolean = false): Promise<IPluginInfo> {
@@ -157,7 +157,7 @@ export class VersionManager {
 	 * Create a plugin information for the specified path.
 	 *
 	 * @param location A path to the package directory
-	 * @param withDependencies A flag to load dependent packages
+	 * @param withDependencies A flag to load dependency packages
 	 * @returns A plugin information for the specified path
 	 */
 	public async createVersionInfoFromPath(location: string, withDependencies: boolean = false): Promise<IPluginInfo> {
@@ -179,13 +179,13 @@ export class VersionManager {
 
 		const dependencies = packageJson.dependencies || {};
 		const dependencyNames = Object.keys(dependencies);
-		const dependentPackageJsons = await Promise.all(dependencyNames.map(async (name) => {
+		const dependencyPackageJsons = await Promise.all(dependencyNames.map(async (name) => {
 			const moduleLocation = path.join(location, "node_modules", name);
 			return await this.readPackageJsonFromPath(moduleLocation);
 		}));
-		const dependentPackages: { [name: string]: PackageJsonInfo | undefined } = {};
-		dependentPackageJsons.forEach((p, i) => {
-			dependentPackages[dependencyNames[i]] = p;
+		const dependencyDetails: { [name: string]: PackageJsonInfo | undefined } = {};
+		dependencyPackageJsons.forEach((p, i) => {
+			dependencyDetails[dependencyNames[i]] = p;
 		});
 
 		return {
@@ -194,7 +194,7 @@ export class VersionManager {
 			location,
 			mainFile,
 			dependencies,
-			dependentPackages,
+			dependencyDetails,
 		};
 	}
 

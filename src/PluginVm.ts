@@ -78,7 +78,7 @@ export class PluginVm {
 			name,
 			version: "1.0.0",
 			dependencies: {},
-			dependentPackages: {}
+			dependencyDetails: {}
 		};
 
 		try {
@@ -258,21 +258,17 @@ export class PluginVm {
 			throw new Error(`Cannot find ${requiredName} in plugin ${pluginContext.name}`);
 		}
 
-		if (this.isDependentPlugin(pluginContext, requiredName)) {
-			const fullPath = path.join(pluginContext.location, "node_modules", requiredName);
-			if (!pluginContext.dependentPackages) {
-				throw new Error(`Dependent packages not loaded for plugin ${pluginContext.name}`);
+		if (this.hasDependency(pluginContext, requiredName)) {
+			let fullPath = path.join(pluginContext.location, "node_modules", requiredName);
+			if (!pluginContext.dependencyDetails) {
+				throw new Error(`Dependencies not loaded for plugin ${pluginContext.name}`);
 			}
-			const packageJson = pluginContext.dependentPackages[requiredName];
+			const packageJson = pluginContext.dependencyDetails[requiredName];
 			if (!packageJson) {
-				throw new Error(`${pluginContext.name} does not include ${requiredName} as local dependency`);
+				throw new Error(`${pluginContext.name} does not include ${requiredName} in local dependencies`);
 			}
 			if (packageJson.main) {
-				// If no extension, give .js
-				if (!path.extname(packageJson.main)) {
-					return path.join(fullPath, `${packageJson.main}.js`);
-				}
-				return path.join(fullPath, packageJson.main);
+				fullPath = path.join(fullPath, packageJson.main);
 			}
 
 			const isFile = this.tryResolveAsFile(fullPath);
@@ -359,12 +355,12 @@ export class PluginVm {
 		return !!this.manager.getInfo(pluginName);
 	}
 
-	private isDependentPlugin(pluginContext: IPluginInfo, requiredName: string) {
-		const { dependentPackages } = pluginContext;
-		if (!dependentPackages) {
-			throw new Error(`Dependent packages not loaded for plugin ${pluginContext.name}`);
+	private hasDependency(pluginContext: IPluginInfo, requiredName: string) {
+		const { dependencyDetails } = pluginContext;
+		if (!dependencyDetails) {
+			throw new Error(`Dependencies not loaded for plugin ${pluginContext.name}`);
 		}
-		return !!dependentPackages[requiredName];
+		return !!dependencyDetails[requiredName];
 	}
 
 	private tryResolveAsFile(fullPath: string): string | undefined {
